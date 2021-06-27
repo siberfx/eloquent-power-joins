@@ -1,14 +1,14 @@
 <?php
 
-namespace KirschbaumDevelopment\EloquentJoins;
+namespace Kirschbaum\PowerJoins;
 
 use Illuminate\Database\Eloquent\Builder as EloquentQueryBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use KirschbaumDevelopment\EloquentJoins\Mixins\JoinRelationship;
-use KirschbaumDevelopment\EloquentJoins\Mixins\QueryBuilderExtraMethods;
-use KirschbaumDevelopment\EloquentJoins\Mixins\QueryRelationshipExistence;
-use KirschbaumDevelopment\EloquentJoins\Mixins\RelationshipsExtraMethods;
+use Kirschbaum\PowerJoins\Mixins\JoinRelationship;
+use Kirschbaum\PowerJoins\Mixins\QueryBuilderExtraMethods;
+use Kirschbaum\PowerJoins\Mixins\QueryRelationshipExistence;
+use Kirschbaum\PowerJoins\Mixins\RelationshipsExtraMethods;
 
 class EloquentJoins
 {

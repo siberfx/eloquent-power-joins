@@ -1,6 +1,6 @@
 name: run-tests
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
     tests:
@@ -10,8 +10,10 @@ jobs:
             fail-fast: true
             matrix:
                 php: [7.3, 7.4]
-                laravel: [6.*, 7.*]
+                laravel: [6.*, 7.*, 8.*]
                 include:
+                    -   laravel: 8.*
+                        testbench: 6.*
                     -   laravel: 7.*
                         testbench: 5.*
                     -   laravel: 6.*
@@ -32,7 +34,7 @@ jobs:
                 uses: actions/cache@v1
                 with:
                     path: ~/.composer/cache/files
-                    key: dependencies-laravel-${{ matrix.laravel }}-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
+                    key: dependencies-pw-v2-${{ matrix.laravel }}-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
 
             -   name: Setup PHP
                 uses: shivammathur/setup-php@v2
@@ -40,11 +42,14 @@ jobs:
                     php-version: ${{ matrix.php }}
                     extensions: curl, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, iconv
                     coverage: none
+                    tools: composer:v1
 
             -   name: Install dependencies
                 run: |
+                    composer --version
                     composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
                     composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-suggest
+                    composer dump
 
             -   name: Execute tests
                 run: vendor/bin/phpunit

@@ -1,11 +1,13 @@
 <?php
 
-namespace KirschbaumDevelopment\EloquentJoins;
+namespace Kirschbaum\PowerJoins;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PowerJoinClause extends JoinClause
 {
@@ -59,7 +61,7 @@ class PowerJoinClause extends JoinClause
         return $this;
     }
 
-    public function on($first, $operator = null, $second = null, $boolean = 'and')
+    public function on($first, $operator = null, $second = null, $boolean = 'and'): self
     {
         parent::on($first, $operator, $second, $boolean);
         $this->useTableAliasInConditions();
@@ -72,6 +74,9 @@ class PowerJoinClause extends JoinClause
         return $this->model;
     }
 
+    /**
+     * Apply the table alias in the existing join conditions.
+     */
     protected function useTableAliasInConditions()
     {
         if (! $this->alias || ! $this->model) {
@@ -86,8 +91,8 @@ class PowerJoinClause extends JoinClause
 
             if (Str::contains($where['first'], $table) && Str::contains($where['second'], $table)) {
                 // if joining the same table, only replace the correct table.key pair
-                $where['first'] = str_replace($table.'.'.$key, $this->alias.'.'.$key, $where['first']);
-                $where['second'] = str_replace($table.'.'.$key, $this->alias.'.'.$key, $where['second']);
+                $where['first'] = str_replace($table . '.' . $key, $this->alias . '.' . $key, $where['first']);
+                $where['second'] = str_replace($table . '.' . $key, $this->alias . '.' . $key, $where['second']);
             } else {
                 $where['first'] = str_replace($table, $this->alias, $where['first']);
                 $where['second'] = str_replace($table, $this->alias, $where['second']);
@@ -99,12 +104,70 @@ class PowerJoinClause extends JoinClause
         return $this;
     }
 
+    public function whereNull($columns, $boolean = 'and', $not = false)
+    {
+        if ($this->alias && Str::contains($columns, $this->tableName)) {
+            $columns = str_replace("{$this->tableName}.", "{$this->alias}.", $columns);
+        }
+
+        return parent::whereNull($columns, $boolean, $not);
+    }
+
+    public function where($column, $operator = null, $value = null, $boolean = 'and')
+    {
+        if ($this->alias && is_string($column) && Str::contains($column, $this->tableName)) {
+            $column = str_replace("{$this->tableName}.", "{$this->alias}.", $column);
+        }
+
+        return parent::where($column, $operator, $value, $boolean);
+    }
+
+    /**
+     * Remove the soft delete condition in case the model implements soft deletes.
+     */
+    public function withTrashed(): self
+    {
+        if (! in_array(SoftDeletes::class, class_uses_recursive($this->getModel()))) {
+            return $this;
+        }
+
+        $this->wheres = array_filter($this->wheres, function ($where) {
+            if ($where['type'] === 'Null' && Str::contains($where['column'], $this->getModel()->getDeletedAtColumn())) {
+                return false;
+            }
+
+            return true;
+        });
+
+        return $this;
+    }
+
+    /**
+     * Remove the soft delete condition in case the model implements soft deletes.
+     */
+    public function onlyTrashed(): self
+    {
+        if (! in_array(SoftDeletes::class, class_uses_recursive($this->getModel()))) {
+            return $this;
+        }
+
+        $this->wheres = array_map(function ($where) {
+            if ($where['type'] === 'Null' && Str::contains($where['column'], $this->getModel()->getDeletedAtColumn())) {
+                $where['type'] = 'NotNull';
+            }
+
+            return $where;
+        }, $this->wheres);
+
+        return $this;
+    }
+
     public function __call($name, $arguments)
     {
-        $scope = 'scope'.ucfirst($name);
+        $scope = 'scope' . ucfirst($name);
 
         if (method_exists($this->getModel(), $scope)) {
-            $this->getModel()->{$scope}($this, ...$arguments);
+            return $this->getModel()->{$scope}($this, ...$arguments);
         } else {
             throw new InvalidArgumentException(sprintf('Method %s does not exist in PowerJoinClause class', $name));
         }

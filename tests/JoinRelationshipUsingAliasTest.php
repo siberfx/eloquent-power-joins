@@ -1,13 +1,13 @@
 <?php
 
-namespace KirschbaumDevelopment\EloquentJoins\Tests;
+namespace Kirschbaum\PowerJoins\Tests;
 
-use KirschbaumDevelopment\EloquentJoins\Tests\Models\Category;
-use KirschbaumDevelopment\EloquentJoins\Tests\Models\Comment;
-use KirschbaumDevelopment\EloquentJoins\Tests\Models\Group;
-use KirschbaumDevelopment\EloquentJoins\Tests\Models\Post;
-use KirschbaumDevelopment\EloquentJoins\Tests\Models\User;
-use KirschbaumDevelopment\EloquentJoins\Tests\Models\UserProfile;
+use Kirschbaum\PowerJoins\Tests\Models\Category;
+use Kirschbaum\PowerJoins\Tests\Models\Comment;
+use Kirschbaum\PowerJoins\Tests\Models\Group;
+use Kirschbaum\PowerJoins\Tests\Models\Post;
+use Kirschbaum\PowerJoins\Tests\Models\User;
+use Kirschbaum\PowerJoins\Tests\Models\UserProfile;
 
 class JoinRelationshipUsingAliasTest extends TestCase
 {
@@ -44,13 +44,13 @@ class JoinRelationshipUsingAliasTest extends TestCase
         $category = factory(Category::class)->state('with:parent')->create();
         $post = factory(Post::class)->create(['category_id' => $category->id]);
 
-        $posts = Post::joinRelationship('category.parent', [
+        $posts = Post::query()->joinRelationship('category.parent', [
             'parent' => function ($join) {
                 $join->as('category_parent');
             },
         ])->get();
 
-        $query = Post::joinRelationship('category.parent', [
+        $query = Post::query()->joinRelationship('category.parent', [
             'parent' => function ($join) {
                 $join->as('category_parent');
             },

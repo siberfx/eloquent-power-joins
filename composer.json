@@ -18,22 +18,23 @@
         }
     ],
     "require": {
-        "php": "^7.1",
-        "illuminate/support": "^6.0|^7.0",
-        "illuminate/database": "^6.0|^7.0"
+        "php": "^7.1|^8.0",
+        "illuminate/support": "^6.0|^7.0|^8.0",
+        "illuminate/database": "^6.0|^7.0|^8.0"
     },
     "require-dev": {
-        "orchestra/testbench": "4.*|5.*",
+        "laravel/legacy-factories": "^1.0@dev",
+        "orchestra/testbench": "4.*|5.*|6.*",
         "phpunit/phpunit": "^8.0"
     },
     "autoload": {
         "psr-4": {
-            "KirschbaumDevelopment\\EloquentJoins\\": "src"
+            "Kirschbaum\\PowerJoins\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "KirschbaumDevelopment\\EloquentJoins\\Tests\\": "tests"
+            "Kirschbaum\\PowerJoins\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -47,8 +48,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "KirschbaumDevelopment\\EloquentJoins\\EloquentJoinsServiceProvider"
+                "Kirschbaum\\PowerJoins\\PowerJoinsServiceProvider"
             ]
         }
-    }
+    },
+
+    "minimum-stability": "dev"
 }
